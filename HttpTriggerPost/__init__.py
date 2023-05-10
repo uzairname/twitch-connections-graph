@@ -48,8 +48,9 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             "Client-Id": os.environ["TWITCH_CLIENT_ID"],
         },
     )
+    userid = response.json()["data"][0]["id"]
     
-    logging.info("user id: {}".format(response.json()["data"][0]["id"]))
+    logging.info("user id: {}".format(userid))
 
     eventsuburl = os.environ["BASE_URL"] + "/api/eventsub"
 
@@ -65,7 +66,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             "type": "channel.raid",
             "version": "1",
             "condition": {
-                "broadcaster_user_id": "123456789"
+                "broadcaster_user_id": userid
             },
             "transport": {
                 "method": "webhook",
@@ -96,6 +97,8 @@ def get_app_access_token():
     if response.status_code != 200:
         raise Exception(f"Failed to get app access token: {response.status_code} {response.text}")
 
-    logging.info(f"Got app access token: {response.json()['access_token']}")
+
+    logging.info("got app access token")
+    logging.info(f"access token: {response.json()['access_token']}")
 
     return response.json()["access_token"]

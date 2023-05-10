@@ -4,9 +4,24 @@ import requests
 
 import azure.functions as func
 
+import functools
 
 
+def log_exception(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except Exception as e:
+            logging.exception(e)
+            raise
+    return wrapper
+
+
+
+@log_exception
 def main(req: func.HttpRequest) -> func.HttpResponse:
+    
     logging.info('Eventsub endpoint')
 
 
@@ -22,6 +37,8 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             "Client-Id": os.environ["TWITCH_CLIENT_ID"],
         },
     )
+
+    logging.info(f"Got eventsub subscriptions: {response.json()}")
 
 
     # get someone's user id
@@ -53,8 +70,6 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             }
         }
     )
-
-
 
 
     logging.info(f"Got eventsub subscriptions: {response.json()}")

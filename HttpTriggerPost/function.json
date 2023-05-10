@@ -9,7 +9,7 @@
       "methods": [
         "post"
       ],
-      "route": "post"
+      "route": "createsubscription"
     },
     {
       "type": "http",

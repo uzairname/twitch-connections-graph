@@ -44,19 +44,24 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     response = requests.get(
         "https://api.twitch.tv/helix/users?login=valorant",
         headers={
+            "Authorization": f"Bearer {token}",
             "Client-Id": os.environ["TWITCH_CLIENT_ID"],
         },
     )
     
-    logging.info(f"user id: {response.json()}")
-
+    logging.info("user id: {}".format(response.json()["data"][0]["id"]))
 
     eventsuburl = os.environ["BASE_URL"] + "/api/eventsub"
 
     # create subscription
     response = requests.post(
         "https://api.twitch.tv/helix/eventsub/subscriptions",
-        json= {
+        headers={
+            "Authorization": f"Bearer {token}",
+            "Client-Id": os.environ["TWITCH_CLIENT_ID"],
+            "Content-Type": "application/json"
+        },
+        json={
             "type": "channel.raid",
             "version": "1",
             "condition": {
@@ -67,7 +72,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                 "callback": eventsuburl,
                 "secret": os.environ["EVENTSUB_SECRET"]
             }
-        }
+        },
     )
 
 
@@ -90,4 +95,7 @@ def get_app_access_token():
     )
     if response.status_code != 200:
         raise Exception(f"Failed to get app access token: {response.status_code} {response.text}")
+
+    logging.info(f"Got app access token: {response.json()['access_token']}")
+
     return response.json()["access_token"]

@@ -1,10 +1,10 @@
 import logging
 import os
 import requests
+import functools
 
 import azure.functions as func
 
-import functools
 
 
 def log_exception(func):
@@ -23,7 +23,6 @@ def log_exception(func):
 def main(req: func.HttpRequest) -> func.HttpResponse:
     
     logging.info('Eventsub endpoint')
-
 
     # get an app access token
     token = get_app_access_token()
@@ -52,7 +51,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     logging.info(f"user id: {response.json()}")
 
 
-    eventsuburl = os.eniron["BASE_URL"] + "/api/eventsub"
+    eventsuburl = os.environ["BASE_URL"] + "/api/eventsub"
 
     # create subscription
     response = requests.post(
@@ -73,7 +72,6 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
 
 
     logging.info(f"Got eventsub subscriptions: {response.json()}")
-
 
     return func.HttpResponse(f"Got eventsub subscriptions: {response.json()}")
 

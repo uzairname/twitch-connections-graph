@@ -66,7 +66,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             "type": "channel.raid",
             "version": "1",
             "condition": {
-                "broadcaster_user_id": userid
+                "from_broadcaster_user_id": userid
             },
             "transport": {
                 "method": "webhook",
@@ -99,6 +99,6 @@ def get_app_access_token():
 
 
     logging.info("got app access token")
-    logging.info(f"access token: {response.json()['access_token']}")
+    logging.info(f"access token: {response.json()}")
 
     return response.json()["access_token"]

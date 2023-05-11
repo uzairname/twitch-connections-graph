@@ -50,7 +50,7 @@ def add_raid_subscription(token, name):
     except KeyError:
         logging.info(f"failed to get userid for {name}")
         return False
-
+    
 
     subscriptions = get_current_subscriptions(token)
 

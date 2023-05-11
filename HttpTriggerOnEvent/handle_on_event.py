@@ -25,18 +25,15 @@ def handle(req: func.HttpRequest) -> func.HttpResponse:
 
 
     # verify the event message
-    secret = "tempsecrete"
+    secret = "tempsecret"
 
     message_id = req.headers.get("Twitch-Eventsub-Message-Id")
     timestamp = req.headers.get("Twitch-Eventsub-Message-Timestamp")
     signature = req.headers.get("Twitch-Eventsub-Message-Signature")
 
     message = message_id.encode() + timestamp.encode() + req.get_body()
-    expected_signature = (
-        "sha256="
-        + hmac.new(
-            secret.encode(), message, hashlib.sha256
-        ).hexdigest()
+    expected_signature = ("sha256=" + 
+                          hmac.new(secret.encode(), message, hashlib.sha256).hexdigest()
     )
 
     match = hmac.compare_digest(signature, expected_signature)
@@ -46,6 +43,16 @@ def handle(req: func.HttpRequest) -> func.HttpResponse:
         return func.HttpResponse(
             "Message signature does not match expected signature",
             status_code=403,
+        )
+    
+
+
+
+    if req.headers.get("Twitch-Eventsub-Message-Type") == "webhook_callback_verification":
+        logging.info('responding to a webhook_callback_verification')
+        return func.HttpResponse(
+            req.get_body(),
+            status_code=200,
         )
 
     logging.info('signature valid')

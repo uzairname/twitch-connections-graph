@@ -34,7 +34,7 @@ def get_app_access_token():
 
 
 
-def add_raid_subscription(name, token):
+def add_raid_subscription(token, name):
     """returns whether subscription was added"""
 
     # get someone's user id
@@ -45,7 +45,12 @@ def add_raid_subscription(name, token):
             "Client-Id": os.environ["TWITCH_CLIENT_ID"],
         },
     )
-    userid = response.json()["data"][0]["id"]
+    try:
+        userid = response.json()["data"][0]["id"]
+    except KeyError:
+        logging.info(f"failed to get userid for {name}")
+        return False
+
 
     subscriptions = get_current_subscriptions(token)
 

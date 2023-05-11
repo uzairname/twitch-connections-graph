@@ -77,18 +77,20 @@ def process_notification(req):
         logging.info("duplicate message")
         return
     
-    body = req.get_json()
+    event = req.get_json().get("event")
 
-    from_id = body.get("event").get("from_broadcaster_user_id")
-    from_name = body.get("event").get("from_broadcaster_user_name")
-    to_id = body.get("event").get("to_broadcaster_user_id")
-    to_name = body.get("event").get("to_broadcaster_user_name")
+    from_id = event.get("from_broadcaster_user_id")
+    from_name = event.get("from_broadcaster_user_name")
+    to_id = event.get("to_broadcaster_user_id")
+    to_name = event.get("to_broadcaster_user_name")
     
     data = {
         "message_id": req.headers.get("Twitch-Eventsub-Message-Id"),
         "message_timestamp": req.headers.get("Twitch-Eventsub-Message-Timestamp"),
+        "raid_name": f"{from_name} raided {to_name}",
         "from": from_id,
         "to": to_id,
+        "viewers": event.get("viewers"),
     }
 
     result = fauna_client.query(

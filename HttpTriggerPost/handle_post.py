@@ -38,7 +38,6 @@ def handle(req: func.HttpRequest) -> func.HttpResponse:
 
     logging.info(f"Got eventsub subscriptions: {response.json()}")
 
-
     # get someone's user id
     response = requests.get(
         "https://api.twitch.tv/helix/users?login=valorant",
@@ -49,12 +48,43 @@ def handle(req: func.HttpRequest) -> func.HttpResponse:
     )
     userid = response.json()["data"][0]["id"]
     
-    # logging.info("user id: {}".format(userid))
+
+
+    subscriptions = get_current_subscriptions(token)
+
+    existing_subscriptions = []
+
+    for subscription in subscriptions:
+        subscription_data = {
+            "type": subscription["type"],
+            "version": subscription["version"],
+            "condition": subscription["condition"],
+        }
+
+        logging.info(f" - : {subscription_data}")
+
+        if subscription_data in existing_subscriptions:
+            delete_subscription(token, subscription["id"])
+        else:
+            existing_subscriptions.append(subscription_data)
+
+    logging.info(f"existing subscriptons: {existing_subscriptions}")
+
+
+    new_subcription = {
+        "type": "channel.raid",
+        "version": "1",
+        "condition": {
+            "from_broadcaster_user_id": userid
+        },
+    }
+
+    if new_subcription in existing_subscriptions:
+        logging.info("already subscribed")
+        return func.HttpResponse(f"already subscribed")
+
 
     eventsuburl = os.environ["BASE_URL"] + "/api/eventsub"
-
-    logging.info(f"eventsub url: {eventsuburl}")
-
     # create subscription
     response = requests.post(
         "https://api.twitch.tv/helix/eventsub/subscriptions",
@@ -64,11 +94,9 @@ def handle(req: func.HttpRequest) -> func.HttpResponse:
             "Content-Type": "application/json"
         },
         json={
-            "type": "channel.raid",
-            "version": "1",
-            "condition": {
-                "from_broadcaster_user_id": userid
-            },
+            "type": new_subcription["type"],
+            "version": new_subcription["version"],
+            "condition": new_subcription["condition"],
             "transport": {
                 "method": "webhook",
                 "callback": eventsuburl,
@@ -99,5 +127,33 @@ def get_app_access_token():
 
     logging.info("got app access token")
     logging.info(f"access token: {response.json()}")
-
+  
     return response.json()["access_token"]
+
+
+
+
+def get_current_subscriptions(token):
+    
+    response = requests.get(
+        "https://api.twitch.tv/helix/eventsub/subscriptions",
+        headers={
+            "Authorization": f"Bearer {token}",
+            "Client-Id": os.environ["TWITCH_CLIENT_ID"],
+        },
+    )
+
+    return response.json()["data"]
+
+
+
+def delete_subscription(token, subscription_id):
+
+    response = requests.delete(
+        f"https://api.twitch.tv/helix/eventsub/subscriptions?id={subscription_id}",
+        headers={
+            "Authorization": f"Bearer {token}",
+            "Client-Id": os.environ["TWITCH_CLIENT_ID"],
+        },
+    )
+    logging.info(f"Deleted subscription response: {response}")

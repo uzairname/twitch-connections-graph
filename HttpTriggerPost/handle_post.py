@@ -10,9 +10,10 @@ from shared_src import add_raid_subscription, function, get_app_access_token
 
 
 @function
-def handle(req: func.HttpRequest) -> func.HttpResponse:
+def handle_post(req: func.HttpRequest) -> func.HttpResponse:
     load_dotenv()
 
+    username = req.params.get('name')
     
     logging.info('Eventsub endpoint')
 
@@ -30,7 +31,7 @@ def handle(req: func.HttpRequest) -> func.HttpResponse:
 
     logging.info(f"Got eventsub subscriptions: {response.json()}")
 
-    added = add_raid_subscription(token, "valorant")
+    added = add_raid_subscription(token, username)
     
     if added:
         return func.HttpResponse(f"finished")

@@ -1,21 +1,20 @@
-import logging
 import azure.functions as func
+from shared_src import function
 
+import logging
 import os
-from dotenv import load_dotenv
-import functools
+
 import hmac
 import hashlib
 
-
-
-from shared_src import function
+from faunadb.client import FaunaClient
+from faunadb import query as q
 
 
 
 
 @function
-def handle(req: func.HttpRequest) -> func.HttpResponse:
+def eventsub_callback(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('On event function processed a request.')
 
 
@@ -42,6 +41,9 @@ def handle(req: func.HttpRequest) -> func.HttpResponse:
     
     logging.info('signature valid')
     if req.headers.get("Twitch-Eventsub-Message-Type") == "notification":
+
+        process_notification(req.get_json())
+
         return func.HttpResponse(
             "Processed event",
             status_code=200,
@@ -65,3 +67,16 @@ def handle(req: func.HttpRequest) -> func.HttpResponse:
 
 
 
+
+def process_notification(body):
+
+    client = FaunaClient(secret=os.environ["FAUNADB_SECRET"])
+
+    result = client.query(
+        q.create(
+            q.collection("notifications"), 
+            { 
+                "data": body["event"]
+            }
+        )
+    )

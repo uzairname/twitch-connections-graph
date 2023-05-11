@@ -14,10 +14,10 @@ def handle_get(req: func.HttpRequest) -> func.HttpResponse:
     token = get_app_access_token()
     subscriptions = get_current_subscriptions(token)
 
-    action = req.params.get('action')
-    if action == "delete":
-        for i in subscriptions:
-            delete_subscription(token, i["id"])
+    # action = req.params.get('action')
+    # if action == "delete":
+    #     for i in subscriptions:
+    #         delete_subscription(token, i["id"])
 
 
     users_ids = get_users_ids_names()

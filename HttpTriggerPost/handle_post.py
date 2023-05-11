@@ -6,14 +6,14 @@ from dotenv import load_dotenv
 import azure.functions as func
 
 
-def log_exception(func):
-    @functools.wraps(func)
+def log_exception(f):
+    @functools.wraps(f)
     def wrapper(*args, **kwargs):
         try:
-            return func(*args, **kwargs)
+            return f(*args, **kwargs)
         except Exception as e:
             logging.exception(e)
-            raise
+            return func.HttpResponse(f"Exception: {e}")
     return wrapper
 
 
@@ -63,7 +63,9 @@ def handle(req: func.HttpRequest) -> func.HttpResponse:
 
         logging.info(f" - : {subscription_data}")
 
-        if subscription_data in existing_subscriptions:
+        if subscription["status"] != "enabled":
+            delete_subscription(token, subscription["id"])
+        elif subscription_data in existing_subscriptions:
             delete_subscription(token, subscription["id"])
         else:
             existing_subscriptions.append(subscription_data)
@@ -75,7 +77,8 @@ def handle(req: func.HttpRequest) -> func.HttpResponse:
         "type": "channel.raid",
         "version": "1",
         "condition": {
-            "from_broadcaster_user_id": userid
+            "from_broadcaster_user_id": userid,
+            "to_broadcaster_user_id": ""
         },
     }
 

@@ -19,7 +19,7 @@ def eventsub_callback(req: func.HttpRequest) -> func.HttpResponse:
 
 
     # verify the event message
-    secret = "tempsecret"
+    secret = os.environ["EVENTSUB_SECRET"]
 
     message_id = req.headers.get("Twitch-Eventsub-Message-Id")
     timestamp = req.headers.get("Twitch-Eventsub-Message-Timestamp")

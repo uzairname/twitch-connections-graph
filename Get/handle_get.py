@@ -15,10 +15,10 @@ def handle_get(req: func.HttpRequest) -> func.HttpResponse:
     client = FaunaClient(secret=os.environ["FAUNADB_SECRET"])
     indexes = client.query(q.paginate(q.indexes()))
 
-    result = client.query(
-        q.create_collection({"name": "notifications"})
-    )
-    logging.info(result)
+    # result = client.query(
+    #     q.create_collection({"name": "notifications"})
+    # )
+    
 
     result = client.query(
         q.create(

@@ -104,7 +104,7 @@ def add_raid_subscription(token, name):
             "transport": {
                 "method": "webhook",
                 "callback": eventsuburl,
-                "secret": "tempsecret"
+                "secret": os.environ["EVENTSUB_SECRET"]
             }
         },
     )

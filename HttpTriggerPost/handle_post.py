@@ -5,6 +5,8 @@ import requests
 from dotenv import load_dotenv
 import azure.functions as func
 
+from ..shared_src.twitch import get_current_subscriptions
+
 
 def log_exception(f):
     @functools.wraps(f)
@@ -131,20 +133,6 @@ def get_app_access_token():
   
     return response.json()["access_token"]
 
-
-
-
-def get_current_subscriptions(token):
-    
-    response = requests.get(
-        "https://api.twitch.tv/helix/eventsub/subscriptions",
-        headers={
-            "Authorization": f"Bearer {token}",
-            "Client-Id": os.environ["TWITCH_CLIENT_ID"],
-        },
-    )
-
-    return response.json()["data"]
 
 
 

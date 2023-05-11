@@ -10,18 +10,7 @@ import hashlib
 from faunadb import query as q
 from faunadb.client import FaunaClient
 
-
-def return_exception(f):
-    @functools.wraps(f)
-    def wrapper(*args, **kwargs):
-        try:
-            return f(*args, **kwargs)
-        except Exception as e:
-            logging.exception(e)
-            return func.HttpResponse(f"Exception: {e}")
-    return wrapper
-
-
+from shared_src import return_exception
 
 
 

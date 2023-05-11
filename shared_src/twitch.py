@@ -1,5 +1,5 @@
 import requests
-
+import os
 
 def get_current_subscriptions(token):
     

@@ -5,21 +5,13 @@ import requests
 from dotenv import load_dotenv
 import azure.functions as func
 
-from shared_src.twitch import get_current_subscriptions
+from shared_src import get_current_subscriptions, return_exception
 
 
-def log_exception(f):
-    @functools.wraps(f)
-    def wrapper(*args, **kwargs):
-        try:
-            return f(*args, **kwargs)
-        except Exception as e:
-            logging.exception(e)
-            return func.HttpResponse(f"Exception: {e}")
-    return wrapper
 
 
-@log_exception
+
+@return_exception
 def handle(req: func.HttpRequest) -> func.HttpResponse:
     load_dotenv()
 

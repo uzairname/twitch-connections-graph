@@ -2,9 +2,11 @@ import logging
 import azure.functions as func
 
 import requests
-from shared_src.twitch import get_current_subscriptions
+from shared_src import get_current_subscriptions, return_exception
 
 
+
+@return_exception
 def handle(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Get endpoint function processed a request.')
 

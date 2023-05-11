@@ -36,13 +36,15 @@ def get_app_access_token():
 
 
 
-def add_raid_subscription(token, name):
+def add_raid_subscription(token, name=None, userid=None):
     """Subscribes to raids to and from the channel, if not already.
     returns whether subscription was added"""
 
-    userid = get_userid(token, name)
-    if not userid:
-        return False
+    if userid is None:
+        userid = get_save_userid(token, name)
+        if userid is None:
+            return False
+
 
     existing_subscriptions = update_current_subscriptions(token)
 
@@ -67,7 +69,7 @@ def add_raid_subscription(token, name):
     created = False
     for new_sub in new_subscriptions:
         if new_sub in existing_subscriptions:
-            logging.info("already subscribed")
+            logging.info(f"already subscribed to {userid}")
         else:
             create_eventsub_subscription(token, new_sub)
             created = True
@@ -148,7 +150,7 @@ def delete_subscription(token, subscription_id):
 
 
 
-def get_userid(token, name):
+def get_save_userid(token, name):
 
     response = requests.get(
         f"https://api.twitch.tv/helix/users?login={name}",

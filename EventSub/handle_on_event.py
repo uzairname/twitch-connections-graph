@@ -7,7 +7,7 @@ import os
 import hmac
 import hashlib
 
-from shared_src.function import fauna_client
+from shared_src import fauna_client, add_raid_subscription, get_app_access_token
 from faunadb import query as q
 
 
@@ -76,13 +76,18 @@ def process_notification(body, headers):
     if fauna_client.query(q.exists(q.match(q.index("twitch_raids_by_message_id"), headers.get("Twitch-Eventsub-Message-Id")))):
         logging.info("duplicate message")
         return
+    
 
-
+    from_id = body.get("event").get("from_broadcaster_user_id")
+    from_name = body.get("event").get("from_broadcaster_user_name")
+    to_id = body.get("event").get("to_broadcaster_user_id")
+    to_name = body.get("event").get("to_broadcaster_user_name")
+    
     data = {
         "message_id": headers.get("Twitch-Eventsub-Message-Id"),
         "message_timestamp": headers.get("Twitch-Eventsub-Message-Timestamp"),
-        "from": body.get("event").get("from_broadcaster_user_name"),
-        "to": body.get("event").get("to_broadcaster_user_name"),
+        "from": from_id,
+        "to": to_id,
     }
 
     result = fauna_client.query(
@@ -93,3 +98,15 @@ def process_notification(body, headers):
             }
         )
     )
+
+
+    token = get_app_access_token()
+
+
+    added = add_raid_subscription(token, from_id)
+    logging.info(f"Subscribed to {from_name}: {added}")
+    added = add_raid_subscription(token, to_id)
+    logging.info(f"Subscribed to {to_name}: {added}")
+
+
+

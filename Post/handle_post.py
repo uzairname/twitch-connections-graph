@@ -36,6 +36,7 @@ def handle_post(req: func.HttpRequest) -> func.HttpResponse:
 
     logging.info(f"Got eventsub subscriptions: {response.json()}")
 
+        
     added = add_raid_subscription(token, username)
     
     if added:

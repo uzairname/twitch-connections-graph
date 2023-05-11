@@ -1,14 +1,22 @@
 import logging
+import os
 import azure.functions as func
 
+from faunadb import query as q
+from faunadb.client import FaunaClient
+from shared_src import get_current_subscriptions, function, get_app_access_token
 
-import requests
-from shared_src import get_current_subscriptions, return_exception, get_app_access_token
 
-
-@return_exception
+@function
 def handle(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Get endpoint function processed a request.')
+
+
+    client = FaunaClient(secret=os.environ["FAUNADB_SECRET"])
+    indexes = client.query(q.paginate(q.indexes()))
+
+
+
 
     token = get_app_access_token()
     subscriptions = get_current_subscriptions(token)

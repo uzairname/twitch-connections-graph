@@ -5,11 +5,11 @@ import requests
 from dotenv import load_dotenv
 import azure.functions as func
 
-from shared_src import add_raid_subscription, return_exception, get_app_access_token
+from shared_src import add_raid_subscription, function, get_app_access_token
 
 
 
-@return_exception
+@function
 def handle(req: func.HttpRequest) -> func.HttpResponse:
     load_dotenv()
 

@@ -7,21 +7,16 @@ import functools
 import hmac
 import hashlib
 
-from faunadb import query as q
-from faunadb.client import FaunaClient
 
-from shared_src import return_exception
 
+from shared_src import function
 
 
 
-@return_exception
+
+@function
 def handle(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('On event function processed a request.')
-
-    # load_dotenv()
-    # client = FaunaClient(secret=os.environ["FAUNADB_SECRET"])
-    # indexes = client.query(q.paginate(q.indexes()))
 
 
     # verify the event message

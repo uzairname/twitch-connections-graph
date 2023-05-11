@@ -5,7 +5,7 @@ import requests
 from dotenv import load_dotenv
 import azure.functions as func
 
-from shared_src import get_current_subscriptions
+from shared_src.twitch import get_current_subscriptions
 
 
 def log_exception(f):

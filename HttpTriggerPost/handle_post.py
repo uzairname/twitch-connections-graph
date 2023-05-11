@@ -18,7 +18,7 @@ def log_exception(func):
 
 
 @log_exception
-def main(req: func.HttpRequest) -> func.HttpResponse:
+def handle(req: func.HttpRequest) -> func.HttpResponse:
     load_dotenv()
 
     

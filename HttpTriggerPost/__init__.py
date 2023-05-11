@@ -1,9 +1,11 @@
 import logging
 import os
+from dotenv import load_dotenv
 import requests
 import functools
 
 import azure.functions as func
+import faunadb
 
 
 
@@ -21,12 +23,14 @@ def log_exception(func):
 
 @log_exception
 def main(req: func.HttpRequest) -> func.HttpResponse:
+
+    load_dotenv()
+
     
     logging.info('Eventsub endpoint')
 
     # get an app access token
     token = get_app_access_token()
-
 
     # Get Twitch EventSub Subscriptions
     response = requests.get(
@@ -71,13 +75,13 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             "transport": {
                 "method": "webhook",
                 "callback": eventsuburl,
-                "secret": os.environ["EVENTSUB_SECRET"]
+                "secret": "tempsecret"
             }
         },
     )
 
 
-    logging.info(f"Got eventsub subscriptions: {response.json()}")
+    logging.info(f"Created eventsub subscription: {response.json()}")
 
     return func.HttpResponse(f"Got eventsub subscriptions: {response.json()}")
 

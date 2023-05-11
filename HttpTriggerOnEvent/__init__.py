@@ -21,8 +21,7 @@ def return_exception(func):
 @return_exception
 def main(req: func.HttpRequest) -> func.HttpResponse:
     
-    logging.info('on event endpoint')
-
+    logging.info('got event {}'.format(req.get_json()))
 
     return func.HttpResponse(f"On event response")
 

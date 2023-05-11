@@ -4,3 +4,4 @@
 
 azure-functions==1.14.0
 faunadb==4.5.0
+python-dotenv==1.0.0

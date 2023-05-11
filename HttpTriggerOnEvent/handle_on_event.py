@@ -49,9 +49,9 @@ def handle(req: func.HttpRequest) -> func.HttpResponse:
         )
 
     logging.info('signature valid')
-
-    logging.info('got event {}'.format(req.get_json()))
-
-    return func.HttpResponse(f"On event response")
+    return func.HttpResponse(
+        "Processed event",
+        status_code=200,
+    )
 
 

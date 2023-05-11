@@ -1,2 +1,2 @@
-from .twitch import get_current_subscriptions
+from .twitch import *
 from .function import return_exception

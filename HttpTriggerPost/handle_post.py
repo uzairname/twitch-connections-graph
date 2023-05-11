@@ -5,7 +5,7 @@ import requests
 from dotenv import load_dotenv
 import azure.functions as func
 
-from shared_src import get_current_subscriptions, return_exception
+from shared_src import get_current_subscriptions, return_exception, get_app_access_token
 
 
 
@@ -42,7 +42,6 @@ def handle(req: func.HttpRequest) -> func.HttpResponse:
     )
     userid = response.json()["data"][0]["id"]
     
-
 
     subscriptions = get_current_subscriptions(token)
 
@@ -104,27 +103,6 @@ def handle(req: func.HttpRequest) -> func.HttpResponse:
     logging.info(f"Created eventsub subscription: {response.json()}")
 
     return func.HttpResponse(f"finished")
-
-
-
-def get_app_access_token():
-    response = requests.post(
-        "https://id.twitch.tv/oauth2/token",
-        params={
-            "client_id": os.environ["TWITCH_CLIENT_ID"],
-            "client_secret": os.environ["TWITCH_CLIENT_SECRET"],
-            "grant_type": "client_credentials",
-        },
-    )
-    if response.status_code != 200:
-        raise Exception(f"Failed to get app access token: {response.status_code} {response.text}")
-
-
-    logging.info("got app access token")
-    logging.info(f"access token: {response.json()}")
-  
-    return response.json()["access_token"]
-
 
 
 

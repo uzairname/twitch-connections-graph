@@ -43,7 +43,7 @@ def eventsub_callback(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('signature valid')
     if req.headers.get("Twitch-Eventsub-Message-Type") == "notification":
 
-        process_notification(req.get_json())
+        process_notification(req)
 
         return func.HttpResponse(
             "Processed event",
@@ -69,14 +69,15 @@ def eventsub_callback(req: func.HttpRequest) -> func.HttpResponse:
 
 
 
-def process_notification(body, headers):
+def process_notification(req):
 
     # check for duplicate message
 
-    if fauna_client.query(q.exists(q.match(q.index("twitch_raids_by_message_id"), headers.get("Twitch-Eventsub-Message-Id")))):
+    if fauna_client.query(q.exists(q.match(q.index("twitch_raids_by_message_id"), req.headers.get("Twitch-Eventsub-Message-Id")))):
         logging.info("duplicate message")
         return
     
+    body = req.get_json()
 
     from_id = body.get("event").get("from_broadcaster_user_id")
     from_name = body.get("event").get("from_broadcaster_user_name")
@@ -84,8 +85,8 @@ def process_notification(body, headers):
     to_name = body.get("event").get("to_broadcaster_user_name")
     
     data = {
-        "message_id": headers.get("Twitch-Eventsub-Message-Id"),
-        "message_timestamp": headers.get("Twitch-Eventsub-Message-Timestamp"),
+        "message_id": req.headers.get("Twitch-Eventsub-Message-Id"),
+        "message_timestamp": req.headers.get("Twitch-Eventsub-Message-Timestamp"),
         "from": from_id,
         "to": to_id,
     }

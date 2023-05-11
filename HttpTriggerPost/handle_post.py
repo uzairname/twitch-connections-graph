@@ -61,8 +61,6 @@ def handle(req: func.HttpRequest) -> func.HttpResponse:
             "condition": subscription["condition"],
         }
 
-        logging.info(f" - : {subscription_data}")
-
         if subscription["status"] != "enabled":
             delete_subscription(token, subscription["id"])
         elif subscription_data in existing_subscriptions:

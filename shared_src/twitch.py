@@ -37,16 +37,14 @@ def get_app_access_token():
 
 
 def add_raid_subscription(token, name):
-    """returns whether subscription was added"""
+    """Subscribes to raids to and from the channel, if not already.
+    returns whether subscription was added"""
 
     userid = get_userid(token, name)
     if not userid:
         return False
 
     existing_subscriptions = update_current_subscriptions(token)
-    
-
-    
 
     logging.info(f"existing subscriptons: {existing_subscriptions}")
 
@@ -128,6 +126,10 @@ def create_eventsub_subscription(token, new_subscription):
             }
         },
     )
+
+    if response.status_code != 202:
+        raise Exception(f"Failed to create eventsub subscription: {response.status_code} {response.text}")
+
     logging.info(f"Created eventsub subscription: {response.json()}")
 
 

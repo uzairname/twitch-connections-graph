@@ -13,6 +13,7 @@ from faunadb import query as q
 
 
 
+
 @function
 def eventsub_callback(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('On event function processed a request.')
@@ -68,13 +69,27 @@ def eventsub_callback(req: func.HttpRequest) -> func.HttpResponse:
 
 
 
-def process_notification(body):
+def process_notification(body, headers):
+
+    # check for duplicate message
+
+    if fauna_client.query(q.exists(q.match(q.index("twitch_raids_by_message_id"), headers.get("Twitch-Eventsub-Message-Id")))):
+        logging.info("duplicate message")
+        return
+
+
+    data = {
+        "message_id": headers.get("Twitch-Eventsub-Message-Id"),
+        "message_timestamp": headers.get("Twitch-Eventsub-Message-Timestamp"),
+        "from": body.get("event").get("from_broadcaster_user_name"),
+        "to": body.get("event").get("to_broadcaster_user_name"),
+    }
 
     result = fauna_client.query(
         q.create(
-            q.collection("notifications"), 
+            q.collection("twitch_raids"), 
             { 
-                "data": body["event"]
+                "data": data
             }
         )
     )

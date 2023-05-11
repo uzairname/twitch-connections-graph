@@ -1,7 +1,8 @@
 import requests
 import os
 import logging
-
+from .function import fauna_client
+from faunadb import query as q
 
 
 def get_current_subscriptions(token):
@@ -37,20 +38,9 @@ def get_app_access_token():
 def add_raid_subscription(token, name):
     """returns whether subscription was added"""
 
-    # get someone's user id
-    response = requests.get(
-        f"https://api.twitch.tv/helix/users?login={name}",
-        headers={
-            "Authorization": f"Bearer {token}",
-            "Client-Id": os.environ["TWITCH_CLIENT_ID"],
-        },
-    )
-    try:
-        userid = response.json()["data"][0]["id"]
-    except KeyError:
-        logging.info(f"failed to get userid for {name}")
+    userid = get_userid(token, name)
+    if not userid:
         return False
-    
 
     subscriptions = get_current_subscriptions(token)
 
@@ -128,6 +118,34 @@ def delete_subscription(token, subscription_id):
     )
     logging.info(f"Deleted subscription response: {response}")
 
+
+
+
+def get_userid(token, name):
+
+    response = requests.get(
+        f"https://api.twitch.tv/helix/users?login={name}",
+        headers={
+            "Authorization": f"Bearer {token}",
+            "Client-Id": os.environ["TWITCH_CLIENT_ID"],
+        },
+    )
+    try:
+        userid = response.json()["data"][0]["id"]
+
+        fauna_client.query(
+            q.create(
+                q.collection("twitch_users"),
+                {"data": {"id": userid, "name": name}},
+            )
+        )
+
+        return userid
+    except KeyError:
+        logging.info(f"failed to get userid for {name}")
+        return None
+
+    
 
 
 

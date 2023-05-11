@@ -1,10 +1,10 @@
 import functools
 import azure.functions as func
-import logging
 import os
 from dotenv import load_dotenv
 import sentry_sdk
 from sentry_sdk import capture_event, capture_exception
+from faunadb.client import FaunaClient
 
 
 load_dotenv()
@@ -13,6 +13,8 @@ sentry_sdk.init(
     dsn=os.environ["SENTRY_DSN"],
     traces_sample_rate=1.0
 )
+
+fauna_client = FaunaClient(secret=os.environ["FAUNADB_SECRET"])
 
 
 def function(f):
@@ -37,4 +39,4 @@ def function(f):
     return wrapper
 
 
-__all__ = ["function"]
+__all__ = ["function", "fauna_client"]

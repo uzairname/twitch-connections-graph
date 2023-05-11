@@ -7,7 +7,7 @@ import os
 import hmac
 import hashlib
 
-from faunadb.client import FaunaClient
+from shared_src.function import fauna_client
 from faunadb import query as q
 
 
@@ -70,9 +70,7 @@ def eventsub_callback(req: func.HttpRequest) -> func.HttpResponse:
 
 def process_notification(body):
 
-    client = FaunaClient(secret=os.environ["FAUNADB_SECRET"])
-
-    result = client.query(
+    result = fauna_client.query(
         q.create(
             q.collection("notifications"), 
             { 

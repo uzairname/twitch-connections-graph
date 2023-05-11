@@ -3,8 +3,7 @@ import os
 import azure.functions as func
 
 from faunadb import query as q
-from faunadb.client import FaunaClient
-from shared_src import get_current_subscriptions, function, get_app_access_token
+from shared_src import get_current_subscriptions, function, get_app_access_token, fauna_client
 
 
 @function
@@ -12,15 +11,8 @@ def handle_get(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Get endpoint function processed a request.')
 
 
-    client = FaunaClient(secret=os.environ["FAUNADB_SECRET"])
-    indexes = client.query(q.paginate(q.indexes()))
 
-    # result = client.query(
-    #     q.create_collection({"name": "notifications"})
-    # )
-    
-
-    result = client.query(
+    result = fauna_client.query(
         q.create(
             q.collection("notifications"), 
             { 

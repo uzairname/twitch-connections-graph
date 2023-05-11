@@ -54,7 +54,7 @@ def handle(req: func.HttpRequest) -> func.HttpResponse:
     
     elif req.headers.get("Twitch-Eventsub-Message-Type") == "webhook_callback_verification":
         res = func.HttpResponse(
-            req.get_body()["challenge"],
+            req.get_json().get("challenge"),
             status_code=200,
         )
         logging.info(f'responding to a webhook_callback_verification{req.get_body()}\n\n{res}')

@@ -1,9 +1,10 @@
 import requests
 import os
 import logging
-from .function import fauna_client
 from faunadb import query as q
 
+from .function import fauna_client
+from .database import add_user
 
 def get_current_subscriptions(token):
 
@@ -42,6 +43,46 @@ def add_raid_subscription(token, name):
     if not userid:
         return False
 
+    existing_subscriptions = update_current_subscriptions(token)
+    
+
+    
+
+    logging.info(f"existing subscriptons: {existing_subscriptions}")
+
+    new_subscriptions = [{
+        "type": "channel.raid",
+        "version": "1",
+        "condition": {
+            "from_broadcaster_user_id": userid,
+            "to_broadcaster_user_id": ""
+        },
+    }, {
+        "type": "channel.raid",
+        "version": "1",
+        "condition": {
+            "from_broadcaster_user_id": "",
+            "to_broadcaster_user_id": userid
+        },
+    }]
+
+    created = False
+    for new_sub in new_subscriptions:
+        if new_sub in existing_subscriptions:
+            logging.info("already subscribed")
+        else:
+            create_eventsub_subscription(token, new_sub)
+            created = True
+
+    return created
+
+
+
+
+
+def update_current_subscriptions(token):
+    """deletes duplicate and failed verification subscriptions, returns all remaining subscriptions"""
+
     subscriptions = get_current_subscriptions(token)
 
     existing_subscriptions = []
@@ -60,23 +101,12 @@ def add_raid_subscription(token, name):
         else:
             existing_subscriptions.append(subscription_data)
 
-    logging.info(f"existing subscriptons: {existing_subscriptions}")
+    return existing_subscriptions
 
 
-    new_subcription = {
-        "type": "channel.raid",
-        "version": "1",
-        "condition": {
-            "from_broadcaster_user_id": userid,
-            "to_broadcaster_user_id": ""
-        },
-    }
 
-    if new_subcription in existing_subscriptions:
-        logging.info("already subscribed")
-        return False
-        
 
+def create_eventsub_subscription(token, new_subscription):
 
     eventsuburl = os.environ["BASE_URL"] + "/api/eventsub"
     # create subscription
@@ -88,9 +118,9 @@ def add_raid_subscription(token, name):
             "Content-Type": "application/json"
         },
         json={
-            "type": new_subcription["type"],
-            "version": new_subcription["version"],
-            "condition": new_subcription["condition"],
+            "type": new_subscription["type"],
+            "version": new_subscription["version"],
+            "condition": new_subscription["condition"],
             "transport": {
                 "method": "webhook",
                 "callback": eventsuburl,
@@ -98,12 +128,7 @@ def add_raid_subscription(token, name):
             }
         },
     )
-
     logging.info(f"Created eventsub subscription: {response.json()}")
-
-    return True
-
-
 
 
 
@@ -133,19 +158,18 @@ def get_userid(token, name):
     try:
         userid = response.json()["data"][0]["id"]
 
-        fauna_client.query(
-            q.create(
-                q.collection("twitch_users"),
-                {"data": {"id": userid, "name": name}},
-            )
-        )
+        add_user(userid, name)
 
         return userid
-    except KeyError:
+    except (KeyError, IndexError):
         logging.info(f"failed to get userid for {name}")
         return None
 
-    
+
+
+
+
+
 
 
 
@@ -155,4 +179,5 @@ __all__ = [
     "get_current_subscriptions",
     "get_app_access_token",
     "add_raid_subscription",
+    "delete_subscription"
 ]

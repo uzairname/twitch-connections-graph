@@ -14,8 +14,13 @@ def handle_post(req: func.HttpRequest) -> func.HttpResponse:
     load_dotenv()
 
     username = req.params.get('name')
+    if not username:
+        return func.HttpResponse(
+            "no name in query string",
+            status_code=400
+        )
     
-    logging.info('Eventsub endpoint')
+    logging.info('post subscription endpoint')
 
     # get an app access token
     token = get_app_access_token()
@@ -34,9 +39,9 @@ def handle_post(req: func.HttpRequest) -> func.HttpResponse:
     added = add_raid_subscription(token, username)
     
     if added:
-        return func.HttpResponse(f"finished")
+        return func.HttpResponse(f"subscribed to {username}")
     else:
-        return func.HttpResponse(f"already subscribed")
+        return func.HttpResponse(f"didn't subscribe to {username}")
 
 
 

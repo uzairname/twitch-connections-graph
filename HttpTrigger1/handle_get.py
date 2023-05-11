@@ -2,7 +2,7 @@ import logging
 import azure.functions as func
 
 import requests
-from shared_src.twitch import get_current_subscriptions
+from shared_src import get_current_subscriptions
 
 
 def handle(req: func.HttpRequest) -> func.HttpResponse:

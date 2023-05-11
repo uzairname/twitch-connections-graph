@@ -45,20 +45,26 @@ def handle(req: func.HttpRequest) -> func.HttpResponse:
             status_code=403,
         )
     
-
-
-
-    if req.headers.get("Twitch-Eventsub-Message-Type") == "webhook_callback_verification":
+    logging.info('signature valid')
+    if req.headers.get("Twitch-Eventsub-Message-Type") == "notification":
+        return func.HttpResponse(
+            "Processed event",
+            status_code=200,
+        )
+    
+    elif req.headers.get("Twitch-Eventsub-Message-Type") == "webhook_callback_verification":
         logging.info('responding to a webhook_callback_verification')
         return func.HttpResponse(
             req.get_body(),
             status_code=200,
         )
+    
+    elif req.headers.get("Twitch-Eventsub-Message-Type") == "revocation":
+        logging.info(f"subscription revoked: {req.get_body()}")
+        return func.HttpResponse(
+            "revoked",
+            status_code=200,
+        )
 
-    logging.info('signature valid')
-    return func.HttpResponse(
-        "Processed event",
-        status_code=200,
-    )
 
 

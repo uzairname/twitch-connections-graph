@@ -25,7 +25,7 @@ def handle(req: func.HttpRequest) -> func.HttpResponse:
 
 
     # verify the event message
-    secret = "tempsecret"
+    secret = "tempsecrete"
 
     message_id = req.headers.get("Twitch-Eventsub-Message-Id")
     timestamp = req.headers.get("Twitch-Eventsub-Message-Timestamp")

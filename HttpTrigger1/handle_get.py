@@ -6,7 +6,6 @@ import requests
 from shared_src import get_current_subscriptions, return_exception, get_app_access_token
 
 
-
 @return_exception
 def handle(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Get endpoint function processed a request.')

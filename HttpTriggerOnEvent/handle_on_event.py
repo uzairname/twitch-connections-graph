@@ -28,6 +28,7 @@ def return_exception(f):
 
 @return_exception
 def handle(req: func.HttpRequest) -> func.HttpResponse:
+    logging.info('On event function processed a request.')
 
     # load_dotenv()
     # client = FaunaClient(secret=os.environ["FAUNADB_SECRET"])
@@ -52,12 +53,13 @@ def handle(req: func.HttpRequest) -> func.HttpResponse:
     match = hmac.compare_digest(signature, expected_signature)
 
     if not match:
+        logging.info('signature INVALUD')
         return func.HttpResponse(
             "Message signature does not match expected signature",
             status_code=403,
         )
 
-
+    logging.info('signature valid')
 
     logging.info('got event {}'.format(req.get_json()))
 

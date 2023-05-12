@@ -108,9 +108,9 @@ def process_notification(req):
     token = get_app_access_token()
 
 
-    added = add_raid_subscription(token, from_id)
+    added = add_raid_subscription(token, userid=from_id)
     logging.info(f"By raid subscribed to {from_name}: {added}")
-    added = add_raid_subscription(token, to_id)
+    added = add_raid_subscription(token, userid=to_id)
     logging.info(f"By raid subscribed to {to_name}: {added}")
 
 

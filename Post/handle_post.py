@@ -39,8 +39,6 @@ def handle_post(req: func.HttpRequest) -> func.HttpResponse:
 
         
     added = add_raid_subscription(token, username)
-
-
     
     if added:
         return func.HttpResponse(f"subscribed to {username}")

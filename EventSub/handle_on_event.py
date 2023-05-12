@@ -98,9 +98,7 @@ def process_notification(req):
     result = fauna_client.query(
         q.create(
             q.collection("twitch_raids"), 
-            { 
-                "data": data
-            }
+            { "data": data }
         )
     )
 

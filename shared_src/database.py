@@ -15,7 +15,7 @@ def get_users_ids_names():
         )
     )["data"]
     
-    return pd.DataFrame(all_users).set_index("id")
+    return pd.DataFrame(all_users)
 
 
 def add_user(userid, login):

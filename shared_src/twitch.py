@@ -36,17 +36,23 @@ def get_app_access_token():
 
 
 
-def add_raid_subscription(token, name=None, userid=None):
+def add_raid_subscription(token, name=None, userid=None, ignore_pending=None):
     """Subscribes to raids to and from the channel, if not already.
     returns whether subscription was added"""
 
+    if userid:
+        userid, login = get_save_user_by_name(token, name)
+    elif name:
+        userid, login = get_save_user_by_id(token, userid)
+    else:
+        raise Exception("no name or userid")
+
     if userid is None:
-        userid = get_save_userid(token, name)
-        if userid is None:
-            return False
+        return False
 
 
-    existing_subscriptions = update_current_subscriptions(token)
+
+    existing_subscriptions = update_current_subscriptions(token, ignore_pending=ignore_pending)
 
     logging.info(f"existing subscriptons: {existing_subscriptions}")
 
@@ -80,8 +86,10 @@ def add_raid_subscription(token, name=None, userid=None):
 
 
 
-def update_current_subscriptions(token):
-    """deletes duplicate and failed verification subscriptions, returns all remaining subscriptions"""
+def update_current_subscriptions(token, ignore_pending=None):
+    """deletes duplicate and failed verification subscriptions, returns all remaining subscriptions
+    ignore_pending: id of a pending verification. Doesn't delete it.
+    """
 
     subscriptions = get_current_subscriptions(token)
 
@@ -94,9 +102,9 @@ def update_current_subscriptions(token):
             "condition": subscription["condition"],
         }
 
-        if subscription["status"] != "enabled":
-            delete_subscription(token, subscription["id"])
-        elif subscription_data in existing_subscriptions:
+        if subscription["id"] != ignore_pending and \
+            subscription["status"] != "enabled" or subscription_data in existing_subscriptions:
+
             delete_subscription(token, subscription["id"])
         else:
             existing_subscriptions.append(subscription_data)
@@ -149,7 +157,7 @@ def delete_subscription(token, subscription_id):
 
 
 
-def get_save_userid(token, name):
+def get_save_user_by_name(token, name) -> tuple:
 
     response = requests.get(
         f"https://api.twitch.tv/helix/users?login={name}",
@@ -160,14 +168,36 @@ def get_save_userid(token, name):
     )
     try:
         userid = response.json()["data"][0]["id"]
-        name = response.json()["data"][0]["login"]
+        login = response.json()["data"][0]["login"]
 
-        add_user(userid, name)
+        add_user(userid, login)
 
-        return userid
+        return userid, login
     except (KeyError, IndexError):
-        logging.info(f"failed to get userid for {name}")
-        return None
+        logging.info(f"failed to get user for name {name}")
+        return None, None
+
+
+
+def get_save_user_by_id(token, userid):
+
+    response = requests.get(
+        f"https://api.twitch.tv/helix/users?id={userid}",
+        headers={
+            "Authorization": f"Bearer {token}",
+            "Client-Id": os.environ["TWITCH_CLIENT_ID"],
+        },
+    )
+    try:
+        userid = response.json()["data"][0]["id"]
+        login = response.json()["data"][0]["login"]
+
+        add_user(userid, login)
+
+        return userid, login
+    except (KeyError, IndexError):
+        logging.info(f"failed to get user for id {userid}")
+        return None, None
 
 
 

@@ -110,7 +110,7 @@ def process_notification(req):
 
     added = add_raid_subscription(token, userid=from_id)
     logging.info(f"By raid subscribed to {from_name}: {added}")
-    added = add_raid_subscription(token, userid=to_id)
+    added = add_raid_subscription(token, userid=to_id, ignore_pending=from_id)
     logging.info(f"By raid subscribed to {to_name}: {added}")
 
 

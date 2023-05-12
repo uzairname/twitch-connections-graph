@@ -9,11 +9,6 @@ from faunadb.client import FaunaClient
 
 load_dotenv()
 
-sentry_sdk.init(
-    dsn=os.environ["SENTRY_DSN"],
-    traces_sample_rate=1.0
-)
-
 fauna_client = FaunaClient(secret=os.environ["FAUNADB_SECRET"])
 
 
@@ -21,6 +16,10 @@ def function(f):
     @functools.wraps(f)
     def wrapper(*args, **kwargs):
         try:
+            sentry_sdk.init(
+                dsn=os.environ["SENTRY_DSN"],
+                traces_sample_rate=1.0
+            )
             add_breadcrumb(category="function", message=f"Executing {f.__name__}")
             http_response = f(*args, **kwargs)
             capture_message({

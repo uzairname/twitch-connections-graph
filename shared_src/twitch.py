@@ -149,7 +149,6 @@ def delete_subscription(token, subscription_id):
 
 
 
-
 def get_save_userid(token, name):
 
     response = requests.get(
@@ -161,6 +160,7 @@ def get_save_userid(token, name):
     )
     try:
         userid = response.json()["data"][0]["id"]
+        name = response.json()["data"][0]["login"]
 
         add_user(userid, name)
 

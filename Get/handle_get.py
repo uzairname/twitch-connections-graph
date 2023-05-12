@@ -5,6 +5,7 @@ import azure.functions as func
 from faunadb import query as q
 from shared_src import get_current_subscriptions, function, get_app_access_token, fauna_client, delete_subscription, get_users_ids_names
 import pandas as pd
+from datetime import timedelta
 
 @function
 def handle_get(req: func.HttpRequest) -> func.HttpResponse:
@@ -30,6 +31,10 @@ def handle_get(req: func.HttpRequest) -> func.HttpResponse:
         )["data"]
         
         df = pd.DataFrame(all_users)
+        df["message_timestamp"] = pd.to_datetime(df["message_timestamp"], utc=True)
+        df = df.sort_values("message_timestamp")
+        df = df[abs(df['message_timestamp'].shift(1) - df['message_timestamp']) > timedelta(seconds=1)]
+
         csv_bytes = df.to_csv(index=False).encode()
 
         return func.HttpResponse(

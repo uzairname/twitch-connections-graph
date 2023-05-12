@@ -52,10 +52,12 @@ def handle_get(req: func.HttpRequest) -> func.HttpResponse:
 
     if action == "graph":
 
-        body = get_raids_graph()
+        level = int(req.params.get('level'))
+
+        body = get_raids_graph(level)
 
         headers = {
-            'Content-Disposition': 'attachment; filename=twitch-connection-graph.zip',
+            'Content-Disposition': f"attachment; filename=connections-graph.zip",
             'Content-Type': 'application/zip'
         }
 

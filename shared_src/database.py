@@ -2,7 +2,7 @@ import logging
 from faunadb import query as q
 
 import pandas as pd
-from datetime import timedelta
+from datetime import timedelta, datetime
 import os
 import tempfile
 import zipfile
@@ -57,7 +57,7 @@ def get_raids_df():
 
 
 
-def get_raids_graph() -> bytes:
+def get_raids_graph(level: int = 1) -> bytes:
 
     data = get_raids_df()
 
@@ -84,9 +84,12 @@ def get_raids_graph() -> bytes:
             with open(os.path.join(tempdir, f"{user}.md"), "w") as f:
                 txt = ""
                 for to_user, weight in to.items():
-                    if (weight >= 2):
+                    if (weight >= level):
                         txt += f"[[{to_user}]] ({weight})\n"
                 f.write(txt)
+        with open(os.path.join(tempdir, "0 METADATA.md"), "w") as f:
+            txt = f"Graph of raids with weight >= {level}, created on {str(datetime.now().date())}"
+            f.write(txt)
 
         # Create a zip file in memory from the temporary directory
         
@@ -96,7 +99,7 @@ def get_raids_graph() -> bytes:
                     zip_file.write(
                         os.path.join(root, file),
                         os.path.relpath(os.path.join(root, file), tempdir),
-                    )        
+                    )    
 
 
     return buffer.getvalue()

@@ -40,9 +40,9 @@ def add_raid_subscription(token, name=None, userid=None, ignore_pending=None):
     """Subscribes to raids to and from the channel, if not already.
     returns whether subscription was added"""
 
-    if userid:
+    if name:
         userid, login = get_save_user_by_name(token, name)
-    elif name:
+    elif userid:
         userid, login = get_save_user_by_id(token, userid)
     else:
         raise Exception("no name or userid")

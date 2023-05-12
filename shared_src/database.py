@@ -18,7 +18,7 @@ def get_users_ids_names():
     return pd.DataFrame(all_users).set_index("id")
 
 
-def add_user(userid, name):
+def add_user(userid, login):
 
     # add if userid doesn't exist
     if fauna_client.query(q.exists(q.match(q.index("twitch_users_by_id"), userid))):
@@ -28,7 +28,7 @@ def add_user(userid, name):
     fauna_client.query(
         q.create(
             q.collection("twitch_users"),
-            {"data": {"id": userid, "name": name}},
+            {"data": {"id": userid, "name": login}},
         )
     )
 

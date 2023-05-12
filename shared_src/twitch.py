@@ -36,14 +36,14 @@ def get_app_access_token():
 
 
 
-def add_raid_subscription(token, name=None, userid=None, ignore_pending=None):
+def add_raid_subscription(token, login=None, userid=None, ignore_pending=None):
     """Subscribes to raids to and from the channel, if not already.
     returns whether subscription was added"""
 
-    if name:
-        userid, login = get_save_user_by_name(token, name)
+    if login:
+        userid, display_name = get_save_user_by_name(token, login)
     elif userid:
-        userid, login = get_save_user_by_id(token, userid)
+        userid, display_name = get_save_user_by_id(token, userid)
     else:
         raise Exception("no name or userid")
 
@@ -144,6 +144,8 @@ def create_eventsub_subscription(token, new_subscription):
 
 
 
+
+
 def delete_subscription(token, subscription_id):
 
     response = requests.delete(
@@ -168,11 +170,11 @@ def get_save_user_by_name(token, name) -> tuple:
     )
     try:
         userid = response.json()["data"][0]["id"]
-        login = response.json()["data"][0]["login"]
+        display_name = response.json()["data"][0]["display_name"]
 
-        add_user(userid, login)
+        add_user(userid, display_name)
 
-        return userid, login
+        return userid, display_name
     except (KeyError, IndexError):
         logging.info(f"failed to get user for name {name}")
         return None, None
@@ -190,11 +192,11 @@ def get_save_user_by_id(token, userid):
     )
     try:
         userid = response.json()["data"][0]["id"]
-        login = response.json()["data"][0]["login"]
+        display_name = response.json()["data"][0]["display_name"]
 
-        add_user(userid, login)
+        add_user(userid, display_name)
 
-        return userid, login
+        return userid, display_name
     except (KeyError, IndexError):
         logging.info(f"failed to get user for id {userid}")
         return None, None

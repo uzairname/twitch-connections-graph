@@ -48,11 +48,14 @@ def handle_get(req: func.HttpRequest) -> func.HttpResponse:
                 "Content-Disposition": "attachment; filename=users.csv"
             }
         )
-    
+
 
     if action == "graph":
-
-        level = int(req.params.get('level'))
+        
+        try:
+            level = int(req.params.get('level'))
+        except:
+            level = 1
 
         body = get_raids_graph(level)
 

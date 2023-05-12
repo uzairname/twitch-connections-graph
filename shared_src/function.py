@@ -11,16 +11,20 @@ load_dotenv()
 
 fauna_client = FaunaClient(secret=os.environ["FAUNADB_SECRET"])
 
+requestnum = 0
+
 
 def function(f):
     @functools.wraps(f)
     def wrapper(*args, **kwargs):
         try:
+            global requestnum
+            requestnum += 1
             sentry_sdk.init(
                 dsn=os.environ["SENTRY_DSN"],
                 traces_sample_rate=1.0
             )
-            add_breadcrumb(category="function", message=f"Executing {f.__name__}")
+            add_breadcrumb(category="function", message=f"Request #{requestnum}. Executing {f.__name__}")
             http_response = f(*args, **kwargs)
             capture_message({
                 "message": f"{f.__name__} executed successfully",

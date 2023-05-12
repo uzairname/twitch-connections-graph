@@ -42,7 +42,7 @@ def eventsub_callback(req: func.HttpRequest) -> func.HttpResponse:
     
     logging.info('signature valid')
     if req.headers.get("Twitch-Eventsub-Message-Type") == "notification":
-
+        logging.info('notification')
         process_notification(req)
 
         return func.HttpResponse(
@@ -83,6 +83,8 @@ def process_notification(req):
     from_name = event.get("from_broadcaster_user_name")
     to_id = event.get("to_broadcaster_user_id")
     to_name = event.get("to_broadcaster_user_name")
+
+    logging.info(f"Got raid. from: {from_name} ({from_id}), to: {to_name} ({to_id})")
     
     data = {
         "message_id": req.headers.get("Twitch-Eventsub-Message-Id"),
@@ -107,9 +109,9 @@ def process_notification(req):
 
 
     added = add_raid_subscription(token, from_id)
-    logging.info(f"Subscribed to {from_name}: {added}")
+    logging.info(f"By raid subscribed to {from_name}: {added}")
     added = add_raid_subscription(token, to_id)
-    logging.info(f"Subscribed to {to_name}: {added}")
+    logging.info(f"By raid subscribed to {to_name}: {added}")
 
 
 

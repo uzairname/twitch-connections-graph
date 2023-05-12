@@ -3,9 +3,8 @@ import os
 import azure.functions as func
 
 from faunadb import query as q
-from shared_src import get_current_subscriptions, function, get_app_access_token, fauna_client, delete_subscription, get_users_ids_names
+from shared_src import get_current_subscriptions, function, get_app_access_token, fauna_client, delete_subscription, get_users_ids_names, get_raids_df, get_raids_graph
 import pandas as pd
-from datetime import timedelta
 
 @function
 def handle_get(req: func.HttpRequest) -> func.HttpResponse:
@@ -23,17 +22,7 @@ def handle_get(req: func.HttpRequest) -> func.HttpResponse:
 
     if action == "raids":
         # Downloads a csv file of all raids
-        all_users = fauna_client.query(
-            q.map_(
-                lambda x: q.select(["data"], q.get(x)),
-                q.paginate(q.documents(q.collection("twitch_raids"))),
-            )
-        )["data"]
-        
-        df = pd.DataFrame(all_users)
-        df["message_timestamp"] = pd.to_datetime(df["message_timestamp"], utc=True)
-        df = df.sort_values("message_timestamp")
-        df = df[abs(df['message_timestamp'].shift(1) - df['message_timestamp']) > timedelta(seconds=1)]
+        df = get_raids_df()
 
         csv_bytes = df.to_csv(index=False).encode()
 
@@ -59,6 +48,21 @@ def handle_get(req: func.HttpRequest) -> func.HttpResponse:
                 "Content-Disposition": "attachment; filename=users.csv"
             }
         )
+    
+
+    if action == "graph":
+
+        body = get_raids_graph()
+
+        headers = {
+            'Content-Disposition': 'attachment; filename=twitch-connection-graph.zip',
+            'Content-Type': 'application/zip'
+        }
+
+        return func.HttpResponse(body, headers=headers, status_code=200)
+
+
+        
 
 
     else: 

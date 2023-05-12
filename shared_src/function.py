@@ -3,7 +3,7 @@ import azure.functions as func
 import os
 from dotenv import load_dotenv
 import sentry_sdk
-from sentry_sdk import capture_event, capture_exception, add_breadcrumb
+from sentry_sdk import capture_event, capture_exception, add_breadcrumb, capture_message
 from faunadb.client import FaunaClient
 
 
@@ -20,11 +20,10 @@ fauna_client = FaunaClient(secret=os.environ["FAUNADB_SECRET"])
 def function(f):
     @functools.wraps(f)
     def wrapper(*args, **kwargs):
-
         try:
             add_breadcrumb(category="function", message=f"Executing {f.__name__}")
             http_response = f(*args, **kwargs)
-            capture_event({
+            capture_message({
                 "message": f"{f.__name__} executed successfully",
                 "level": "info",
                 "extra": {
@@ -36,7 +35,6 @@ def function(f):
             capture_exception(e)
             return func.HttpResponse(f"Exception: {e}")
         
-
     return wrapper
 
 

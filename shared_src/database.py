@@ -41,13 +41,20 @@ def add_user(userid, login):
 
 
 def get_raids_df():
+
+    # get all documents in twitch_raids collection
+    faunadb_max_page_length = 100000
+
     all_raids = fauna_client.query(
-            q.map_(
-                lambda x: q.select(["data"], q.get(x)),
-                q.paginate(q.documents(q.collection("twitch_raids"))),
-            )
-        )["data"]
+        q.map_(
+            lambda x: q.select(["data"], q.get(x)),
+            q.paginate(q.documents(q.collection("twitch_raids")), size=faunadb_max_page_length),
+        )
+    )["data"]
+
+    logging.info(len(all_raids))
     
+
     df = pd.DataFrame(all_raids)
     df["message_timestamp"] = pd.to_datetime(df["message_timestamp"], utc=True)
     df = df.sort_values("message_timestamp")
@@ -88,7 +95,7 @@ def get_raids_graph(level: int = 1) -> bytes:
                         txt += f"[[{to_user}]] ({weight})\n"
                 f.write(txt)
         with open(os.path.join(tempdir, "0 METADATA.md"), "w") as f:
-            txt = f"Graph of raids with weight >= {level}, created on {str(datetime.now().date())}"
+            txt = f"Graph of raids with weight >= {level},\nCreated on {str(datetime.now().date())} {str(datetime.now().time())}\n\n"
             f.write(txt)
 
         # Create a zip file in memory from the temporary directory

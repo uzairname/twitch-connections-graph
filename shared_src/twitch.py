@@ -6,8 +6,9 @@ from faunadb import query as q
 from .function import fauna_client
 from .database import add_user
 
-def get_current_subscriptions(token):
+def all_subscriptions(token):
 
+    # combine all pages of subscriptions into one list
     response = requests.get(
         "https://api.twitch.tv/helix/eventsub/subscriptions",
         headers={
@@ -16,7 +17,27 @@ def get_current_subscriptions(token):
         },
     )
 
-    return response.json()["data"]
+    yield from response.json()["data"]
+
+    cursor = response.json()["pagination"]["cursor"]
+
+    while cursor:
+
+        response = requests.get(
+            "https://api.twitch.tv/helix/eventsub/subscriptions?after={}".format(cursor),
+            headers={
+                "Authorization": f"Bearer {token}",
+                "Client-Id": os.environ["TWITCH_CLIENT_ID"],
+            },
+        )
+
+        yield from response.json()["data"]
+
+        cursor = response.json()["pagination"].get("cursor")
+
+
+
+
 
 
 def get_app_access_token():
@@ -91,11 +112,9 @@ def update_current_subscriptions(token, ignore_pending=None):
     ignore_pending: id of a pending verification. Doesn't delete it.
     """
 
-    subscriptions = get_current_subscriptions(token)
-
     existing_subscriptions = []
 
-    for subscription in subscriptions:
+    for subscription in all_subscriptions(token):
         subscription_data = {
             "type": subscription["type"],
             "version": subscription["version"],
@@ -211,7 +230,7 @@ def get_save_user_by_id(token, userid):
 
 
 __all__ = [
-    "get_current_subscriptions",
+    "all_subscriptions",
     "get_app_access_token",
     "add_raid_subscription",
     "delete_subscription"

@@ -53,7 +53,6 @@ def get_raids_df():
     )["data"]
 
     logging.info(len(all_raids))
-    
 
     df = pd.DataFrame(all_raids)
     df["message_timestamp"] = pd.to_datetime(df["message_timestamp"], utc=True)
@@ -69,31 +68,59 @@ def get_raids_graph(level: int = 1) -> bytes:
     data = get_raids_df()
 
     graph = {}
+    groups = {} # {name: [group, time discovered, path]}
 
-    def add_edge(from_, to):
+
+    def add_edge(from_, to, group_number, timestamp):
+        from_known = from_ in groups
+        to_known = to in groups
+
+        if not from_known and not to_known:
+            groups[from_] = [chr(group_number+97), timestamp, f"{to} <- **{from_}**"]
+            groups[to] = [chr(group_number+97), timestamp, f"{from_} -> **{to}**"]
+            group_number += 1
+        elif not to_known:
+            groups[to] = [groups[from_][0], timestamp, f"{groups[from_][2]} -> **{to}**"]
+        elif not from_known:
+            groups[from_] = [groups[to][0], timestamp, f"{groups[to][2]} <- **{from_}**"]
+
         try:
             graph[from_][to] += 1
+            # from and to exist
         except KeyError:
             try:
                 graph[from_][to] = 1
+                # from exists, to doesn't
             except KeyError:
                 graph[from_] = {to: 1}
+                # from doesn't exist
 
+        return group_number
+
+
+    group_number = 0
     for i, row in data.iterrows():
         from_name = row["raid_name"].split(' ')[0]
         to_name = row["raid_name"].split(' ')[-1]
-        add_edge(from_name, to_name)
+        group_number = add_edge(from_name, to_name, group_number, row["message_timestamp"])
 
 
     buffer = io.BytesIO()
     with tempfile.TemporaryDirectory(dir=tempfile.gettempdir()) as tempdir:
-        for user, to in graph.items():
+        for user, info in groups.items():
             with open(os.path.join(tempdir, f"{user}.md"), "w") as f:
-                txt = ""
-                for to_user, weight in to.items():
-                    if (weight >= level):
-                        txt += f"[[{to_user}]] ({weight})\n"
+                txt = "\n"
+                txt += f"#{info[0]}\n"
+                txt += f"{info[2]}\n\n"
+
+                if to_users := graph.get(user):
+                    for to_user, weight in to_users.items():
+                        if (weight >= level):
+                            txt += f"[[{to_user}]] ({weight})\n"
+                txt += f"\nDiscovered at {info[1]}\n"
                 f.write(txt)
+        
+        
         with open(os.path.join(tempdir, "0 METADATA.md"), "w") as f:
             txt = f"Graph of raids with weight >= {level},\nCreated on {str(datetime.now().date())} {str(datetime.now().time())}\n\n"
             f.write(txt)
@@ -113,6 +140,17 @@ def get_raids_graph(level: int = 1) -> bytes:
 
 
 
+
+
+def number_to_multiplicative(num):
+    if num == 1:
+        return "once"
+    elif num == 2:
+        return "twice"
+    elif num == 3:
+        return "thrice"
+    else:
+        return f"{num} times"
 
 
 

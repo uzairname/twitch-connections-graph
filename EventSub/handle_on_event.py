@@ -19,6 +19,7 @@ def eventsub_callback(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('On event function processed a request.')
 
 
+
     # verify the event message
     secret = os.environ["EVENTSUB_SECRET"]
 
@@ -42,8 +43,8 @@ def eventsub_callback(req: func.HttpRequest) -> func.HttpResponse:
     
     logging.info('signature valid')
     if req.headers.get("Twitch-Eventsub-Message-Type") == "notification":
-        logging.info('notification')
-        process_notification(req)
+        logging.info('received notification')
+        # process_notification(req)
 
         return func.HttpResponse(
             "Processed event",

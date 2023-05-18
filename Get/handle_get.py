@@ -13,12 +13,12 @@ def handle_get(req: func.HttpRequest) -> func.HttpResponse:
 
 
     action = req.params.get('action')
-    # if action == "delete":
-    #     for i in subscriptions:
-    #         delete_subscription(token, i["id"])
+    if action == "delete":
+        for i in all_subscriptions(get_app_access_token()):
+            delete_subscription(token, i["id"])
 
 
-    if action == "raids":
+    elif action == "raids":
         # Downloads a csv file of all raids
         df = get_raids_df()
 
@@ -33,7 +33,7 @@ def handle_get(req: func.HttpRequest) -> func.HttpResponse:
             }
         )
     
-    if action == "users":
+    elif action == "users":
         
         users_ids = get_users_ids_names()
         csv_bytes = users_ids.to_csv(index=False).encode()
@@ -66,7 +66,6 @@ def handle_get(req: func.HttpRequest) -> func.HttpResponse:
 
 
         
-
     else: 
         token = get_app_access_token()
         response = all_subscriptions(token)

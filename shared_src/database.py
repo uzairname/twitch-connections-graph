@@ -99,7 +99,7 @@ def get_raids_graph(level: int = 1) -> bytes:
 
 
     group_number = 0
-    for i, row in data.iterrows():
+    for _, row in data.iterrows():
         from_name = row["raid_name"].split(' ')[0]
         to_name = row["raid_name"].split(' ')[-1]
         group_number = add_edge(from_name, to_name, group_number, row["message_timestamp"])
@@ -126,7 +126,6 @@ def get_raids_graph(level: int = 1) -> bytes:
             f.write(txt)
 
         # Create a zip file in memory from the temporary directory
-        
         with zipfile.ZipFile(buffer, "w") as zip_file:
             for root, dirs, files in os.walk(tempdir):
                 for file in files:
@@ -137,7 +136,6 @@ def get_raids_graph(level: int = 1) -> bytes:
 
 
     return buffer.getvalue()
-
 
 
 

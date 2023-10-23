@@ -14,7 +14,8 @@ def handle_get(req: func.HttpRequest) -> func.HttpResponse:
 
     action = req.params.get('action')
     if action == "delete":
-        for i in all_subscriptions(get_app_access_token()):
+        token = get_app_access_token()
+        for i in all_subscriptions(token):
             delete_subscription(token, i["id"])
 
 
@@ -65,13 +66,12 @@ def handle_get(req: func.HttpRequest) -> func.HttpResponse:
         return func.HttpResponse(body, headers=headers, status_code=200)
 
 
-        
-    else: 
-        token = get_app_access_token()
-        response = all_subscriptions(token)
 
-        txt = ""
-        for i in response:
-            txt += f"{json.dumps(i, indent=4)}\n"
+    token = get_app_access_token()
+    response = all_subscriptions(token)
 
-        return func.HttpResponse(f"subscriptions:\n{txt}")
+    txt = ""
+    for i in response:
+        txt += f"{json.dumps(i, indent=4)}\n"
+
+    return func.HttpResponse(f"subscriptions:\n{txt}")
